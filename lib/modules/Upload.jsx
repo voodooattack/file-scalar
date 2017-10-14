@@ -61,7 +61,7 @@ class Upload extends PureComponent {
     this.enableMultiple = this.enableMultiple.bind(this);
 
     const { previewUrl = () => '' } = props.options || {};
-    const preview = previewUrl(props.document);
+    const preview = this.enableMultiple() ? props.value.map(_id => previewUrl(props.document, _id)) : previewUrl(props.document);
     const isEmpty = this.enableMultiple() ? props.value.length === 0 : !props.value && !preview;
     const emptyValue = this.enableMultiple() ? [] : '';
 
@@ -98,7 +98,7 @@ class Upload extends PureComponent {
 
     // set the component in upload mode with the preview
     this.setState({
-      preview: this.enableMultiple() ? [...this.state.preview, files[0].preview] : files[0].preview
+      preview: this.enableMultiple() ? [...(this.state.preview || []), ...files.map(file => file.preview)] : files[0].preview
     });
 
     // tell vulcanForm to catch the value
@@ -109,7 +109,7 @@ class Upload extends PureComponent {
   Remove the image at `index` (or just remove image if no index is passed)
   */
   clearImage(index) {
-    window.URL.revokeObjectURL(this.enableMultiple() ? this.state.value[index].preview : this.state.preview);
+    window.URL.revokeObjectURL(this.enableMultiple() ? this.state.preview[index] : this.state.preview);
     const newValue = this.enableMultiple() ? removeNthItem(this.state.value, index): '';
     this.context.addToAutofilledValues({[this.props.name]: newValue});
     this.setState({
