@@ -61,7 +61,7 @@ class Upload extends PureComponent {
     this.enableMultiple = this.enableMultiple.bind(this);
 
     const { previewUrl = () => '' } = props.options || {};
-    const preview = this.enableMultiple() ? props.value.map(_id => previewUrl(props.document, _id)) : previewUrl(props.document);
+    const preview = this.enableMultiple() ? (props.value || []).map(_id => previewUrl(props.document, _id)) : previewUrl(props.document);
     const isEmpty = this.enableMultiple() ? props.value.length === 0 : !props.value && !preview;
     const emptyValue = this.enableMultiple() ? [] : '';
 
@@ -98,11 +98,12 @@ class Upload extends PureComponent {
 
     // set the component in upload mode with the preview
     this.setState({
-      preview: this.enableMultiple() ? [...(this.state.preview || []), ...files.map(file => file.preview)] : files[0].preview
+      preview: this.enableMultiple() ? [...(this.state.preview || []), ...files.map(file => file.preview)] : files[0].preview,
+      value: this.enableMultiple() ? [...this.state.value, ...files] : files[0]
+    }, () => {
+      // tell vulcanForm to catch the value
+      this.context.addToAutofilledValues({[this.props.name]: this.state.value });
     });
-
-    // tell vulcanForm to catch the value
-    this.context.addToAutofilledValues({[this.props.name]: files[0]});
   }
 
   /*
